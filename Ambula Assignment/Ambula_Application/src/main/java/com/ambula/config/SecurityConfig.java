@@ -1,0 +1,88 @@
+package com.ambula.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.SecurityFilterChain;
+
+/**
+ * The SecurityConfig class is responsible for configuring Spring Security settings for the application.
+ * It defines the security filter chain and provides methods for creating a password encoder and user details service.
+ */
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+
+	/**
+     * Creates a SecurityFilterChain for the specified HttpSecurity object.
+     * @param http The HttpSecurity object to configure the SecurityFilterChain for.
+     * @return The configured SecurityFilterChain object.
+     * @throws Exception If an error occurs while configuring the SecurityFilterChain.
+     */
+	@Bean
+	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+		
+		// Configure authorization rules for each request matcher and disable CSRF protection
+	    http.authorizeHttpRequests()
+	            .requestMatchers("/users/get_users/**").hasRole("READER")
+	            .requestMatchers("/users/**").hasRole("ADMIN")
+	            .anyRequest().authenticated()
+	            .and()
+	            .formLogin()
+	            .and()
+	            .httpBasic().and()
+	            .csrf().disable();
+	             
+	        
+	    return http.build();
+	}
+
+
+	/**
+     * Creates a BCryptPasswordEncoder object that can be used for password encoding.
+     * @return A BCryptPasswordEncoder object.
+     */
+	@Bean
+	public PasswordEncoder passwordEncoder() {
+
+		return new BCryptPasswordEncoder();
+
+	}
+	
+
+
+	/**
+     * Creates an InMemoryUserDetailsManager object that can be used for user authentication.
+     * The user details service is pre-populated with an admin and reader user.
+     * @return An InMemoryUserDetailsManager object.
+     */
+    @Bean
+    public UserDetailsService userDetailsService() {
+    	
+    	// Create admin and reader users with encoded passwords and roles
+        UserDetails admin = User
+                .withUsername("admin")
+                .password(passwordEncoder().encode("admin"))
+                .roles("ADMIN")
+                .build();
+        
+        UserDetails reader =User
+                .withUsername("reader")
+                .password(passwordEncoder().encode("reader"))
+                .roles("READER")
+                .build();
+        
+     // Create an InMemoryUserDetailsManager with the admin and reader users
+        return new InMemoryUserDetailsManager(admin, reader);
+    }
+}

@@ -1,0 +1,5 @@
+package com.ambula.repository;
+
+public interface UserLocationRepository {
+
+}

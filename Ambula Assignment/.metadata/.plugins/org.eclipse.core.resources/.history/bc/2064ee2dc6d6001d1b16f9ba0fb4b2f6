@@ -1,0 +1,5 @@
+package com.ambula.controller;
+
+public class UserLocationController {
+
+}

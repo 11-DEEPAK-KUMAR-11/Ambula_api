@@ -1,0 +1,5 @@
+package com.ambula.config;
+
+public class SecurityConfig {
+
+}

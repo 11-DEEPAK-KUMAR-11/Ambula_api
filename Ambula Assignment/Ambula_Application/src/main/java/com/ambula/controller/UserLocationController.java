@@ -1,0 +1,121 @@
+package com.ambula.controller;
+
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
+
+import com.ambula.model.UserLocation;
+import com.ambula.repository.UserLocationRepository;
+
+/**
+* The UserLocationController class handles requests for creating, updating, and deleting user location data and
+* retrieving the nearest user locations from the database.
+*/
+@RestController
+@RequestMapping("/users")
+public class UserLocationController {
+	
+	/**
+	 * The repository for user location data.
+	 */
+    private final UserLocationRepository userLocationRepository;
+
+    
+    /**
+     * Constructs a new UserLocationController object.
+     *
+     * @param userLocationRepository The repository for user location data.
+     */
+    public UserLocationController(UserLocationRepository userLocationRepository) {
+    	
+        this.userLocationRepository = userLocationRepository;
+    }
+
+    
+    /**
+     * Creates a new user location record in the database.
+     * @param userLocation The user location object to be added to the database.
+     * @return A ResponseEntity object containing the saved user location object and a CREATED status code.
+     */
+    @PostMapping("/create_data")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UserLocation> createUserLocation(@RequestBody UserLocation userLocation) {
+    	
+        return new ResponseEntity<>( userLocationRepository.save(userLocation),HttpStatus.CREATED);
+    }
+
+    
+    
+    /**
+     * Updates an existing user location record in the database.
+     * @param id The ID of the user location record to be updated.
+     * @param userLocation The updated user location object.
+     * @return A ResponseEntity object containing the updated user location object and an ACCEPTED status code.
+     * @throws ResponseStatusException if the specified ID does not exist in the database.
+     */
+    @PutMapping("/update_data/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UserLocation> updateUserLocation(@PathVariable Long id, @RequestBody UserLocation userLocation) {
+    	
+        UserLocation existingUserLocation = userLocationRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+       
+        existingUserLocation.setName(userLocation.getName());
+        existingUserLocation.setLatitude(userLocation.getLatitude());
+        existingUserLocation.setLongitude(userLocation.getLongitude());
+        
+        return  new ResponseEntity<>( userLocationRepository.save(existingUserLocation),HttpStatus.ACCEPTED);
+    }
+
+    
+    
+    /**
+     * Deletes a user location record from the database.
+     * @param id The ID of the user location record to be deleted.
+     * @return A ResponseEntity object containing a success message and an OK status code.
+     */
+    @DeleteMapping("/delete_data/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> deleteUserLocation(@PathVariable Long id) {
+    	
+        userLocationRepository.deleteById(id);
+        String msg="User data deleted successfully !";
+        
+        return  new ResponseEntity<>( msg ,HttpStatus.OK);
+        
+    }
+
+    
+    
+    /**
+     * Retrieves the nearest user locations from the database.
+     * @param n The number of nearest user locations to retrieve.
+     * @return A ResponseEntity object containing a list of user locations and an OK status code.
+     */
+    @GetMapping("/get_users/{n}")
+    @PreAuthorize("hasRole('READER')")
+    public ResponseEntity<List<UserLocation>> getNearestUserLocations(@PathVariable Integer n) {
+    	
+        List<UserLocation> allUserLocations = userLocationRepository.findAllByOrderByLatitudeAscLongitudeAsc();
+        
+        if (allUserLocations.size() <= n) {
+        	
+            return new ResponseEntity<>( allUserLocations, HttpStatus.OK );
+            
+        } else {
+        	
+            return new ResponseEntity<>(allUserLocations.subList(0, n), HttpStatus.OK);
+            
+        }
+    }
+}

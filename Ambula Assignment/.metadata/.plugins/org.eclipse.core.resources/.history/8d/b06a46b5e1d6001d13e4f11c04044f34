@@ -1,0 +1,63 @@
+package com.ambula.controller;
+
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
+
+import com.ambula.model.UserLocation;
+import com.ambula.repository.UserLocationRepository;
+
+@RestController
+@RequestMapping("/users")
+public class UserLocationController {
+	
+    private final UserLocationRepository userLocationRepository;
+
+    public UserLocationController(UserLocationRepository userLocationRepository) {
+        this.userLocationRepository = userLocationRepository;
+    }
+
+    @PostMapping("/create_data")
+    @PreAuthorize("hasRole('ADMIN')")
+    public UserLocation createUserLocation(@RequestBody UserLocation userLocation) {
+        return userLocationRepository.save(userLocation);
+    }
+
+    @PutMapping("/update_data/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public UserLocation updateUserLocation(@PathVariable Long id, @RequestBody UserLocation userLocation) {
+    	
+        UserLocation existingUserLocation = userLocationRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        existingUserLocation.setName(userLocation.getName());
+        existingUserLocation.setLatitude(userLocation.getLatitude());
+        existingUserLocation.setLongitude(userLocation.getLongitude());
+        return userLocationRepository.save(existingUserLocation);
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public void deleteUserLocation(@PathVariable Long id) {
+        userLocationRepository.deleteById(id);
+    }
+
+    @GetMapping("/get_users/{n}")
+    @PreAuthorize("hasRole('READER')")
+    public List<UserLocation> getNearestUserLocations(@PathVariable Integer n) {
+        List<UserLocation> allUserLocations = userLocationRepository.findAllByOrderByLatitudeAscLongitudeAsc();
+        if (allUserLocations.size() <= n) {
+            return allUserLocations;
+        } else {
+            return allUserLocations.subList(0, n);
+        }
+    }
+}

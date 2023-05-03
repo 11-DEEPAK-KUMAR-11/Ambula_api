@@ -1,0 +1,5 @@
+package com.ambula.model;
+
+public class UserLocation {
+
+}

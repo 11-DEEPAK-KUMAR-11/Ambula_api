@@ -1,0 +1,28 @@
+package com.ambula;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+
+/**
+*The AmbulaApplication class serves as the main entry point for the Ambula application.
+*It is responsible for starting the Spring Boot application context by calling the SpringApplication.run() method.
+*@author [Deepak Kumar]
+*@version 1.0
+*@since [10/04/2023]
+*/
+@SpringBootApplication
+public class AmbulaApplication {
+
+	
+	/**
+	 * This is the main method which starts the Spring Boot application.
+	 * It creates an instance of the AmbulaApplication class and runs it with the specified arguments.
+	 *
+	 * @param args command line arguments, if any
+	 */
+	public static void main(String[] args) {
+		SpringApplication.run(AmbulaApplication.class, args);
+	}
+
+}
