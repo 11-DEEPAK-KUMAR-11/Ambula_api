@@ -1,6 +1,7 @@
 # Ambula_api
-Create a spring boot project using Gradle User Location Problem  
-with the following requirements
+### A spring boot project using Gradle User Location Problem  
+
+- with the following requirements
 
 1. There is 2 users (ADMIN, READER).
 2. ADMIN can perform CRUDE operations like POST, DELETE, PATCH, etc.
